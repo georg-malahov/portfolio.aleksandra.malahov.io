@@ -161,6 +161,24 @@
     white-space: nowrap;
   }
   .bio .contact .row { display: flex; gap: 14px; align-items: baseline; min-width: 0; }
+
+  .bio .legal {
+    position: absolute;
+    bottom: 14px; right: 18px;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 11px; letter-spacing: .15em; text-transform: uppercase;
+  }
+  .bio .legal a {
+    color: var(--accent);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(255,208,97,.35);
+    padding-bottom: 1px;
+  }
+  .bio .legal a:hover { border-color: var(--accent); }
+  .bio .legal .sep {
+    width: 3px; height: 3px; border-radius: 50%;
+    background: rgba(255,208,97,.6);
+  }
   .bio .contact .k {
     color: var(--accent);
     width: 7.5em; flex: 0 0 7.5em;
@@ -264,6 +282,13 @@
     }
     .bio .contact .row { gap: 12px; }
     .bio .contact .k { width: 8.5em; flex: 0 0 8.5em; font-size: 11px; }
+    .bio .legal {
+      position: static;
+      margin-top: 22px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255,208,97,.18);
+      justify-content: flex-end;
+    }
     .tile .label { padding: 10px 12px; font-size: 12px; }
     .modal-stage { width: 94vw; height: 60vh; }
     .video-nav { width: 44px; height: 44px; font-size: 22px; }
@@ -356,8 +381,13 @@ bio.innerHTML = `
   <div class="contact">
     <div class="row"><span class="k">WhatsApp</span><span class="v"><a href="https://wa.me/4915773614292" target="_blank">+49 157 73614292</a></span></div>
     <div class="row"><span class="k">Instagram</span><span class="v"><a href="https://www.instagram.com/malahov_aleksa" target="_blank">@malahov_aleksa</a></span></div>
-    <div class="row"><span class="k">Web</span><span class="v"><a href="https://aleksandra.malahov.io" target="_blank">aleksandra.malahov.io</a></span></div>
+    <div class="row"><span class="k">E-Mail</span><span class="v"><a href="mailto:aleksandra@malahov.de">aleksandra@malahov.de</a></span></div>
     <div class="row"><span class="k">Standort</span><span class="v">Schweinfurt, Bayern</span></div>
+  </div>
+  <div class="legal">
+    <a href="impressum.html">Impressum</a>
+    <span class="sep"></span>
+    <a href="datenschutz.html">Datenschutz</a>
   </div>`;
 grid.appendChild(bio);
 
