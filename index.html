@@ -125,7 +125,7 @@
   }
   .bio:hover img.poster { transform: none; }
   .bio {
-    padding: clamp(20px, 2vw, 36px) clamp(24px, 2.5vw, 48px);
+    padding: clamp(20px, 2vw, 36px) clamp(24px, 2.5vw, 48px) 0;
   }
   .bio h1 {
     font-family: "Didot", "Bodoni 72", "Playfair Display", Georgia, serif;
@@ -171,10 +171,10 @@
   }
   .bio .legal {
     align-self: stretch;
-    margin-top: 18px;
-    padding-top: 14px;
+    margin-top: 22px;
+    padding: 14px 0;
     border-top: 1px solid rgba(255,208,97,.18);
-    display: flex; align-items: center; justify-content: flex-end; gap: 10px;
+    display: flex; align-items: center; justify-content: center; gap: 14px;
     font-size: 11px; letter-spacing: .15em; text-transform: uppercase;
   }
   .bio .legal a {
@@ -273,7 +273,7 @@
       grid-column: 1 / -1 !important;
       grid-row: 1 !important;
       order: -1;
-      padding: 28px 22px 24px;
+      padding: 28px 22px 0;
       min-height: auto;
       height: auto;
       justify-content: flex-start;
@@ -291,7 +291,7 @@
     }
     .bio .contact .row { gap: 12px; }
     .bio .contact .k { width: 8.5em; flex: 0 0 8.5em; font-size: 11px; }
-    .bio .legal { margin-top: 22px; padding-top: 16px; }
+    .bio .legal { margin-top: 16px; padding: 10px 0; }
     .tile .label { padding: 10px 12px; font-size: 12px; }
     .modal-stage { width: 94vw; height: 60vh; }
     .video-nav { width: 44px; height: 44px; font-size: 22px; }
