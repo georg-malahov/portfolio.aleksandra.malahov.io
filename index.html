@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="de"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Aleksandra Malahov — Fotografin &amp; Videografin</title>
+<style>
+  :root {
+    --bg: #000;
+    --fg: #ffffff;
+    --muted: #d8d6d2;
+    --accent: #ffd061;
+    --gap: 10px;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; height: 100%;
+    background: var(--bg); color: var(--fg);
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    overflow: hidden; cursor: default;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(4, 1fr);
+    gap: var(--gap);
+    padding: var(--gap);
+    height: 100vh;
+    width: 100vw;
+  }
+  .tile {
+    position: relative;
+    overflow: hidden;
+    background: #1a1a1c;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: transform .35s ease, box-shadow .35s ease;
+  }
+  .tile img.poster {
+    width: 100%; height: 100%; object-fit: cover;
+    display: block;
+    transition: transform .8s ease, opacity .6s ease, filter .4s ease;
+  }
+  .tile:hover img.poster { transform: scale(1.04); }
+  .tile .label {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    padding: 14px 16px;
+    font-size: 14px; font-weight: 600;
+    letter-spacing: .14em; text-transform: uppercase;
+    color: #fff;
+    text-shadow: 0 1px 4px rgba(0,0,0,.8);
+    background: linear-gradient(to top, rgba(0,0,0,.85), rgba(0,0,0,0) 80%);
+    pointer-events: none;
+  }
+  .tile .badge {
+    position: absolute; top: 12px; right: 12px;
+    width: 28px; height: 28px; border-radius: 50%;
+    background: rgba(0,0,0,.55); color: var(--fg);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; letter-spacing: .05em;
+    backdrop-filter: blur(6px);
+  }
+  .tile.video .badge::before { content: "▶"; font-size: 10px; }
+  .tile.photos .badge::before { content: "◫"; font-size: 12px; }
+
+  /* Center bio */
+  .bio {
+    grid-column: 2 / span 2;
+    grid-row: 2 / span 2;
+    background: var(--bg);
+    border: 1px solid #2a2a2a;
+    border-radius: 4px;
+    padding: clamp(24px, 2.5vw, 48px);
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    text-align: center;
+    cursor: default;
+  }
+  .bio:hover img.poster { transform: none; }
+  .bio {
+    padding: clamp(20px, 2vw, 36px) clamp(24px, 2.5vw, 48px);
+  }
+  .bio h1 {
+    font-family: "Didot", "Bodoni 72", "Playfair Display", Georgia, serif;
+    font-weight: 500;
+    font-size: clamp(40px, 5.2vw, 88px);
+    margin: 0 0 14px; letter-spacing: .005em; line-height: .98;
+    color: #fff;
+  }
+  .bio .role {
+    font-size: clamp(18px, 1.7vw, 28px);
+    color: var(--accent);
+    margin: 0 0 26px;
+    letter-spacing: .3em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .bio .bio-text {
+    font-size: clamp(16px, 1.45vw, 22px);
+    line-height: 1.5;
+    color: var(--fg);
+    margin: 0 0 28px;
+    max-width: 44ch;
+  }
+  .bio .contact {
+    border-top: 1px solid #2a2a2a;
+    padding-top: 22px;
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px 28px;
+    font-size: clamp(13px, 1.05vw, 17px);
+    text-align: left;
+    white-space: nowrap;
+  }
+  .bio .contact .row { display: flex; gap: 14px; align-items: baseline; min-width: 0; }
+  .bio .contact .k {
+    color: var(--accent);
+    width: 7.5em; flex: 0 0 7.5em;
+    text-transform: uppercase;
+    letter-spacing: .2em;
+    font-size: .78em;
+    font-weight: 700;
+  }
+  .bio .contact .v { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .bio .contact .v { color: #fff; font-weight: 500; }
+  .bio .contact a { color: inherit; text-decoration: none; border-bottom: 1px solid rgba(255,208,97,.4); }
+  .bio .contact a:hover { border-color: var(--accent); }
+
+  /* Modal */
+  .modal {
+    position: fixed; inset: 0;
+    display: none; flex-direction: column; align-items: center; justify-content: center;
+    gap: 16px;
+    background: rgba(0,0,0,.78); backdrop-filter: blur(8px);
+    z-index: 100;
+  }
+  .modal.open { display: flex; }
+  .modal-stage {
+    width: 70vw; height: 70vh;
+    max-width: 1400px;
+    background: #000;
+    border-radius: 6px; overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0,0,0,.6);
+    position: relative;
+  }
+  .modal-stage img, .modal-stage iframe {
+    width: 100%; height: 100%; object-fit: contain; border: 0; display: block;
+  }
+  .modal-stage img.fade-out { opacity: 0; transition: opacity .4s; }
+  .modal-stage img { transition: opacity .4s; }
+  .modal-controls {
+    display: none; align-items: center; gap: 18px;
+    user-select: none;
+  }
+  .modal.has-carousel .modal-controls { display: flex; }
+  .video-nav {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: rgba(0,0,0,.55); color: #fff;
+    border: 1px solid rgba(255,255,255,.18);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; padding: 0;
+    font-size: 22px; line-height: 1;
+    transition: background .2s;
+  }
+  .video-nav:hover { background: rgba(0,0,0,.8); }
+  .modal-counter {
+    min-width: 3em; text-align: center;
+    font-size: 12px; letter-spacing: .15em;
+    color: rgba(255,255,255,.75);
+    font-variant-numeric: tabular-nums;
+  }
+  .modal-hint {
+    position: absolute; bottom: -36px; left: 0; right: 0;
+    text-align: center; font-size: 11px; letter-spacing: .25em;
+    color: rgba(255,255,255,.55); text-transform: uppercase;
+  }
+
+  /* Fullscreen mode tweaks */
+  .modal-stage:fullscreen { width: 100vw; height: 100vh; max-width: none; border-radius: 0; }
+  .modal-stage:fullscreen .modal-hint { display: none; }
+  .modal-stage:fullscreen img { object-fit: contain; }
+
+  /* Mobile / narrow viewport: vertical layout */
+  @media (max-width: 820px) {
+    html, body { overflow: auto; height: auto; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: auto;
+      grid-auto-rows: 42vw;
+      gap: 8px;
+      padding: 8px;
+      width: 100%;
+      height: auto;
+    }
+    .tile { grid-row: auto !important; grid-column: auto !important; }
+    .bio {
+      grid-column: 1 / -1 !important;
+      grid-row: 1 !important;
+      order: -1;
+      padding: 28px 22px 24px;
+      min-height: auto;
+      height: auto;
+      justify-content: flex-start;
+      overflow: visible;
+    }
+    .bio h1 { font-size: clamp(36px, 11vw, 64px); margin-bottom: 10px; }
+    .bio .role { font-size: 14px; letter-spacing: .25em; margin-bottom: 18px; }
+    .bio .bio-text { font-size: 15px; line-height: 1.5; margin-bottom: 22px; max-width: 38ch; }
+    .bio .contact {
+      grid-template-columns: 1fr;
+      gap: 10px;
+      padding-top: 18px;
+      font-size: 14px;
+      white-space: normal;
+    }
+    .bio .contact .row { gap: 12px; }
+    .bio .contact .k { width: 8.5em; flex: 0 0 8.5em; font-size: 11px; }
+    .tile .label { padding: 10px 12px; font-size: 12px; }
+    .modal-stage { width: 94vw; height: 60vh; }
+    .video-nav { width: 44px; height: 44px; font-size: 22px; }
+    .modal-controls { gap: 22px; }
+    .modal-hint { display: none; }
+  }
+
+  @media (max-width: 480px) {
+    .grid { grid-template-columns: 1fr; grid-auto-rows: 65vw; }
+    .bio { padding: 32px 20px 26px; }
+  }
+</style></head>
+<body>
+
+<div class="grid" id="grid"></div>
+
+<div class="modal" id="modal">
+  <div class="modal-stage" id="stage">
+    <div class="modal-hint">Doppelklick → Vollbild ein/aus · ← → Fotos · Esc oder außerhalb klicken → schließen</div>
+  </div>
+  <div class="modal-controls" id="controls">
+    <button class="video-nav prev" id="videoPrev" type="button" aria-label="Vorheriges">‹</button>
+    <span class="modal-counter" id="counter"></span>
+    <button class="video-nav next" id="videoNext" type="button" aria-label="Nächstes">›</button>
+  </div>
+</div>
+
+<script>
+const PHOTOS = {
+  pf: ["https://i.wfolio.com/x/LATXGxMAvg4T0aCx3BMAPcoPN8LBuMrG/WUxqXOvhFPl7GHv-GzWkMqqXeqAxaS7S/AxmPseNVLJ-LSvt7zBM6TSGpJZaydFZt/qH0icEIXkgNb-agJ3KwRBiZ52hFJGxWL/Xq08SQoVqeJZjwinunW4GA.jpg","https://i.wfolio.com/x/LATXGxMAvg4T0aCx3BMAPcoPN8LBuMrG/WUxqXOvhFPl7GHv-GzWkMqqXeqAxaS7S/AxmPseNVLJ-LSvt7zBM6TXSRAzjsgblq/s_hlSxGDMDtspG60uudWOo_i633Tw_fl/raseWhT28_gxFj7LY7CDvA.jpg","https://i.wfolio.com/x/R3ne-xQoxk0nbEaF31Eo9Daf02WIOpPw/QsRnp-Deem5bBidvZY1danQbZcfqFXvK/gis1S5hg6sd8kcIIzoMHo1-y2l8ackwR/5wGi4Xh-hPG7A5VGAQGNzoeXRDnKM0T7/0udaqxuiQ0X9uJogmZs5Bw.png","https://i.wfolio.com/x/uZ-vrbqj2EegGiEP2PkuXvAALhfRb-Bf/nE4oHIAhniftasxVtDreN4z7e4pgkG-U/OUIZhXl4jkLRPLRw3o9RKR_7YySjLplk/Krxz6MZXeKcVJCLTYZjzmImKgRNC0Hk1/W4QZ9NHncoTR5_PBkUzQYQ.jpg"],
+  portr_a: ["https://i.wfolio.com/x/KfN2JhbB89-m6UeUSQ-43b-4LTDPyZVn/q6sVLUvjujnOk6mXbO2srbIKpPlcOqy0/t7rVx8PT5NFW95R5iPfYgBdCvXqdZSYC/zyAGIGx14QnH8prwkbZ-T_VQC0dpw9Hp/imD7pN62XUepN3NSIwunZtLwTxFNiFnn/mvApufZ5YtCfRACpKFT2_ikyvtSFEXbJ/_AAJSBHewABTUBTwTqaDGE3GRxUSeTUr/wZKI4cqix_e9CR-CcHV9PXPfJUBfsWpo/muxTBH9ZxpW8-FiFNuSGTLwXkyC03lLI/RxNmMdMqd4BEShyOzRrQBEh5c00RNL4W/BLniVlxCR4mtblOuVqkriBP3bUHVqFvt/VDJhQGOqsd4GwiCEZMAQOTmbB4RcfaaM/RkCkyx2zT4zVoHfUPp9UdBG9ePAer5ig/1PjRZwpBcWHcz7BfCddbzyNdeXz0oHFU/K_7HJkCzRLXZNaz43SL-GUZreooRCWMy/F6VOSImqGE3YWdSzTRZhzhAGP2Yv7yyx/Jzu8lLVGDxSF-Z0xUn3ZkDVbe6bZhxCs/VshAe-OC4Z1_Hu3p1WuguKgxfrrFg3HN/roTXVpFcFu6ZkZPz_lk_Ug.jpg","https://i.wfolio.com/x/D48ScH1DA6jxU_uSH-Or-C0cJClpP-QP/lEAL128xEMPGM2o_rKw_kMPHKR9vAJ80/-HPHCcQVrFKUKE_IJppd55R-vnYOEFRs/1SFlSkvdabdoKftBdNx02MhRJFMV53C1/vkb5tzN-oiNoCGI-AX0u8Q.jpg","https://i.wfolio.com/x/D48ScH1DA6jxU_uSH-Or-C0cJClpP-QP/lEAL128xEMPGM2o_rKw_kMPHKR9vAJ80/1nff_P5t04pzhvVJZB3lqIJCtb4O5k-e/tDP95HrMz-3EZdFkoVg5YPg9lwGCp8gA/HR2jcfyczhdny32pePq-ag.jpg","https://i.wfolio.com/x/D48ScH1DA6jxU_uSH-Or-C0cJClpP-QP/lEAL128xEMPGM2o_rKw_kMPHKR9vAJ80/31die2FeaCAtTJi4xKgn4JgUO3YhqRx1/RR8SyQTSi8DESVdCbHmg4wuF15-6maIx/BiSTmgmu2ZH52kZLqQS38A.jpg","https://i.wfolio.com/x/D48ScH1DA6jxU_uSH-Or-C0cJClpP-QP/lEAL128xEMPGM2o_rKw_kMPHKR9vAJ80/NlQrUutd9WCaol4a0jje_bobomm8dCuW/GnJVOnu74ATaYmlUOVDPECHXDS-NlThr/kIUCvEXgNAtnLfbqlJS0pw.jpg","https://i.wfolio.com/x/D48ScH1DA6jxU_uSH-Or-C0cJClpP-QP/lEAL128xEMPGM2o_rKw_kMPHKR9vAJ80/OhWXBLrBTnW5Cmm6wIDnElAMPqj7M7Fb/iTHZQbL79-k6LPAZleF7FmFyQE1kA67C/7lO0kWLsAHK_GohoQWKDnQ.jpg","https://i.wfolio.com/x/D48ScH1DA6jxU_uSH-Or-C0cJClpP-QP/lEAL128xEMPGM2o_rKw_kMPHKR9vAJ80/TG15t6sMBuqxBiY6_1loBZpb8x2ODfXO/ILHNMtOpHuP4lE2xi7BKtBbNzDF69vl9/2vq24OtfOfQSpWOe2stubg.jpg","https://i.wfolio.com/x/D48ScH1DA6jxU_uSH-Or-C0cJClpP-QP/lEAL128xEMPGM2o_rKw_kMPHKR9vAJ80/aut6FNoAiSaYn5WAfQPI63MpqcT_Pj8L/VNRA-hytKPelWHwRJpiqxw2TUjiHzcGY/WfZE5EDabcHfQWasg465aA.jpg","https://i.wfolio.com/x/D48ScH1DA6jxU_uSH-Or-C0cJClpP-QP/lEAL128xEMPGM2o_rKw_kMPHKR9vAJ80/cZ_TXXVZWsSErtCGICi6X5V6_1ZWYCla/BTpejnLCflmFtcmmw0hZ2gLvMSOuETKb/_VM8GacGH-c4bX5sqrP4rA.jpg","https://i.wfolio.com/x/D48ScH1DA6jxU_uSH-Or-C0cJClpP-QP/lEAL128xEMPGM2o_rKw_kMPHKR9vAJ80/juvDMWmoEtd4wBi2vmchE4SZIs_sbIUW/7xG28cO8LjCc9zsTNqW2F11jUFjhIJ9p/rQIPbO-WHTwLIYQRnj7rDQ.jpg","https://i.wfolio.com/x/D48ScH1DA6jxU_uSH-Or-C0cJClpP-QP/lEAL128xEMPGM2o_rKw_kMPHKR9vAJ80/kYhGgPOwqOwLjweHoDNttkizMT4wUu5r/Ay8Eeip6IVcFDJ9GdmQaXsa-bAH7B2K2/xN-B48XCU5upuqwvXuq6RA.jpg","https://i.wfolio.com/x/D48ScH1DA6jxU_uSH-Or-C0cJClpP-QP/lEAL128xEMPGM2o_rKw_kMPHKR9vAJ80/nRtapR4KaSPXysZlJStzIcCbjZk9LYoU/ecrIn5WIxXz63bPhD48PdFjO6eCfC5yh/e3eKlG-TcQhnFhlAKHw1zg.jpg","https://i.wfolio.com/x/D48ScH1DA6jxU_uSH-Or-C0cJClpP-QP/lEAL128xEMPGM2o_rKw_kMPHKR9vAJ80/nRtapR4KaSPXysZlJStzIfcQSH9HmVR3/ZLnPneNWZQmKQ-3pHt17kJto02ISeoZ2/ED-LDjQyJniSxhd3tLyVYQ.jpg","https://i.wfolio.com/x/D48ScH1DA6jxU_uSH-Or-C0cJClpP-QP/lEAL128xEMPGM2o_rKw_kMPHKR9vAJ80/nSlnvxjEAdo-hV2F5XDWBZA4qoGLhdZu/C0_zAOxNDWQiLqsTJ9ga6XKQnmapg_ZN/c9R6vgT2O-N5748DFLpAGg.jpg","https://i.wfolio.com/x/D48ScH1DA6jxU_uSH-Or-C0cJClpP-QP/lEAL128xEMPGM2o_rKw_kMPHKR9vAJ80/xlzGLedylH-3QBqLZpC4uSqs6jaGS_Hs/ay6K1s5dbKzgJg6S-X5zokQJpQQlK8sv/THkEG5h_-PLOCyoI88i9uQ.jpg","https://i.wfolio.com/x/zfNWg0RActCaYvCdP8NS6h3QcKqIOO7I/oVCmpsR2A0_zCBuWQbm7dJYwNQ6ysoqE/dIlm3le8PXbYLdOcKDzj2bumSiNzb1SY/QZz_S3n4gUJdFGW7HDmX3lUYTvZv89lr/bZZxTs3BS3O4chURURi3Uw.jpg","https://i.wfolio.com/x/zfNWg0RActCaYvCdP8NS6h3QcKqIOO7I/oVCmpsR2A0_zCBuWQbm7dJYwNQ6ysoqE/h10OociAGp6vBmp3pTk0xyX9c1wwvweO/k226dts_IBYZoB6dmFBJja8Y-iRDaGY9/tmGPmNr6Jx1N0R7A09MV2A.jpg","https://i.wfolio.com/x/zfNWg0RActCaYvCdP8NS6h3QcKqIOO7I/oVCmpsR2A0_zCBuWQbm7dJYwNQ6ysoqE/lzRe2jpXT_HXHTlCLYu96hFrwP8XYoOc/jF10iMn2Z3se9C3Itt3CvqFo0oH1J7eM/abFbLG4GcZbie9jCAN9ReA.jpg","https://i.wfolio.com/x/zfNWg0RActCaYvCdP8NS6h3QcKqIOO7I/oVCmpsR2A0_zCBuWQbm7dJYwNQ6ysoqE/uDRCH6HqanGv1u2a-Ad5PyvF8drEHUtU/naYu81fVjebUwV8VqcOFjTsMOnCDMLG2/dfqCxcR1TlHZDKxsatTpIQ.jpg","https://i.wfolio.com/x/zfNWg0RActCaYvCdP8NS6h3QcKqIOO7I/oVCmpsR2A0_zCBuWQbm7dJYwNQ6ysoqE/yJAecJHcPBEowSJQaPsBwmiYeudbH2Pn/7BQ7H7vJbHWTtLoKxEwXdpuLXUpZyeZg/VEjMLfmqoLYmFDSupp6qbg.jpg","https://i.wfolio.com/x/D48ScH1DA6jxU_uSH-Or-C0cJClpP-QP/lEAL128xEMPGM2o_rKw_kMPHKR9vAJ80/O80sYuFvPV5w_K4ewpMh5kxH_jNGPcJp/m0xvuQnmxyFSbEZ7vWhAMYMerIlIIr22/Vea-FvZPu-OAnAHKt6S-iQ.jpg","https://i.wfolio.com/x/D48ScH1DA6jxU_uSH-Or-C0cJClpP-QP/lEAL128xEMPGM2o_rKw_kMPHKR9vAJ80/R7srBkKZBp8GfH68GSxbPkH8bOCwsu_F/dB-p5JWZI81yh8ppOJ97pI2h-lnA1dns/TlshT1s0_ubJ6GfCq723PQ.jpg"],
+  sem_a: ["https://i.wfolio.com/x/D48ScH1DA6jxU_uSH-Or-C0cJClpP-QP/lEAL128xEMPGM2o_rKw_kMPHKR9vAJ80/EqhPM2SnMFPjxythnkgRhY3u5Y9bozrl/fcDYXwt9RIeo91PwMQPDO81h3_9ogdhW/__VAy3oZ8v4e7iSFmAMT2w.jpg","https://i.wfolio.com/x/D48ScH1DA6jxU_uSH-Or-C0cJClpP-QP/lEAL128xEMPGM2o_rKw_kMPHKR9vAJ80/WWYCcxzY61rZguir9ZniT806EJVdBSWq/37tGtD5bmZ7ABiK9hA8MxPIbmgYO9gi0/oKeRf0PYgGMHM2lfCfBEyA.jpg","https://i.wfolio.com/x/D48ScH1DA6jxU_uSH-Or-C0cJClpP-QP/lEAL128xEMPGM2o_rKw_kMPHKR9vAJ80/Y4RyKHorOYAt7iIZ5p-qh37U5x_4h0fG/qnvhD1cYPViYfTj3dRFHpFaZhrqF6Rgg/HZVJIP5kewWQvdLzUfU1Vg.jpg","https://i.wfolio.com/x/D48ScH1DA6jxU_uSH-Or-C0cJClpP-QP/lEAL128xEMPGM2o_rKw_kMPHKR9vAJ80/c1y-BhBWVTEhqrKNyYv1Nwwh76npeoBC/cifvMgpQa4cqbiffj6k-8Kt3bsBM1r6k/uLovPMt394zUY46JMU9pjQ.jpg","https://i.wfolio.com/x/zfNWg0RActCaYvCdP8NS6h3QcKqIOO7I/oVCmpsR2A0_zCBuWQbm7dJYwNQ6ysoqE/2r6MwNQ1LQLfs7ZP6uDjvkbZg6MjpFan/GkfJ1xYBfAq3kK4z03qZaF3VqooecKn3/Bl9gvSybmlLwI_9SQdLa8Q.jpg","https://i.wfolio.com/x/zfNWg0RActCaYvCdP8NS6h3QcKqIOO7I/oVCmpsR2A0_zCBuWQbm7dJYwNQ6ysoqE/3F2uPKhBkztvtp5DbEow-LKLPY64MWFf/hibR3VSl2YT6Z1JUrxYOFSVJybEKMAs1/TZGQCHkiRPYU9bnYcI7Azw.jpg","https://i.wfolio.com/x/zfNWg0RActCaYvCdP8NS6h3QcKqIOO7I/oVCmpsR2A0_zCBuWQbm7dJYwNQ6ysoqE/5TGqYrrwaUdOPgGEHfVIPhE-i228qoWq/Iq-t5v6-Yv1Y4COs02yPYwgGoQqV6XDp/0wVGRM-6xCFBufxPkMMA8A.jpg","https://i.wfolio.com/x/zfNWg0RActCaYvCdP8NS6h3QcKqIOO7I/oVCmpsR2A0_zCBuWQbm7dJYwNQ6ysoqE/8BCj1BVCDc2yywJcSD8TlM__89M7uO7J/lTdN-on1btln5wfR1yOAEULAvWNQCBEQ/PHkS-E02h4nZzeRrD63BMw.jpg","https://i.wfolio.com/x/zfNWg0RActCaYvCdP8NS6h3QcKqIOO7I/oVCmpsR2A0_zCBuWQbm7dJYwNQ6ysoqE/FPdlzv8_jNYEwwqlnnpPIweo-DRxT6MF/wXOgvjw6HYscdA8veZhIlb1qOKB1mQmc/gJVC78jDw_5rycIPFlsUQA.jpg","https://i.wfolio.com/x/KfN2JhbB89-m6UeUSQ-43b-4LTDPyZVn/q6sVLUvjujnOk6mXbO2srbIKpPlcOqy0/t7rVx8PT5NFW95R5iPfYgBdCvXqdZSYC/zyAGIGx14QnH8prwkbZ-T_VQC0dpw9Hp/imD7pN62XUepN3NSIwunZtLwTxFNiFnn/mvApufZ5YtCfRACpKFT2_ikyvtSFEXbJ/_AAJSBHewABTUBTwTqaDGE3GRxUSeTUr/wZKI4cqix_e9CR-CcHV9PXPfJUBfsWpo/muxTBH9ZxpW8-FiFNuSGTIc-KkdkXl_w/qloVgslkeTnsPdtesAh0uJfTDhY2r20m/TFu_Iqo5ThQ6bQyd1XvUjREXjPsmzxjr/g5XDx5cUnesScf56gVRZAHnVRpgiMWve/8g4HaJX2Kevad3kc-Nuf26CebwO4_z8K/mDDQ-5Cw_wZ_t6pa0RoRSJQ8168rjIJK/kOjsy3A7D0KTzal-XFXVdNeJXM41BBP2/_7fcTgMuDOtsQQ6XeJScPkpADzVMMSaW/DCP9udr6BYnHiaM95N40ALwS34P6jlxi/GdyYCvYeXCFUidlEcRTG7xZjyI_A1vas/OezlXhn_3fUQ0ZvtOB3ErA.jpg","https://i.wfolio.com/x/Erhj60RfGoSDn6LYN1vjjheZsgmFENWg/70nl7vp0vtA5I_3875z-74SYoU4uutGd/xstRKgtuKfAuaesT0g7GCi4Oda3C9tA7/cmEz6OTpfph4FbllmBX5a0aMkLbMZZUo/8OgUt05b61mpV4S2so2U1xSI0rTO6Izh/clCZ6DIdHOOjA8ntsZc81wuJe4dMyJmw/vH1du3geWBdworJMCea1q4ph30m4Tvkl/tJWMu5IKxX-_jidObuDhnMkv-eCriKYg/wMHXnrteQ_6WVX21h5V7tDuyIY8tA_6P/Xk9d2iQ57TDse9Esn2Wc3lbzW9NZ-s3f/_rQ8aFyzwKqHmVc9qcx0Vd43kWLMFZdR/pOQoiEGZUnlf1965ZmxgkS2XA5k-NGdM/MUIVKkcwfHPWga94CqPOyNquM7qUdjOE/Fb2hMcVHKh9LlFaOLVNcMu__wA7YAu5T/1xI0Fb5kqflPWEMifmprcQDe2sIpLeAH/aMttzZ20YIvFxXu35DkXoQalA4wPz_su/UvsBDew_Y6MHW9MQwwlNcofi5DcNnFOe/Z62N1nB2FVRXz3nYt7Xa7iDshgnbRiaG/zMLmD4-LE89P2M7l2Dd2Hw.jpg","https://i.wfolio.com/x/Erhj60RfGoSDn6LYN1vjjheZsgmFENWg/70nl7vp0vtA5I_3875z-74SYoU4uutGd/xstRKgtuKfAuaesT0g7GCi4Oda3C9tA7/cmEz6OTpfph4FbllmBX5a0aMkLbMZZUo/8OgUt05b61mpV4S2so2U1xSI0rTO6Izh/clCZ6DIdHOOjA8ntsZc81wuJe4dMyJmw/vH1du3geWBdworJMCea1q4ph30m4Tvkl/tJWMu5IKxX-_jidObuDhnMkv-eCriKYg/wMHXnrteQ_6WVX21h5V7tHKeG4G4k-QP/KoWQb8rdPo37HlvHARosu-MhmImTWSPV/o-zLfKGvUdF50bfoVcI1cc7ZI37uNC6b/J7aaI1NgSW_DZ9O_OLJ9vMflq7FlgZRG/wh0wKan6TsvDSGD7hGrvrh_tzmBtlJrZ/-aZeQEq1fB9OOja-bZ4I23rXr2RsAbyM/Xq4M7BPlcz4BUkldf9wRI0rCFl4CEY9Q/xKKGI42lCpzkyVSYkjHeIIqCwLYc1c9e/w_gQnC4sYk2QBUBXI1IvamhiFMMnQ1t3/aYR2L3M3HUX8u16mramV08NzO4NqQqHc/lCW1dIcbpFV0C4kFH8qD0Q.jpg","https://i.wfolio.com/x/Erhj60RfGoSDn6LYN1vjjheZsgmFENWg/70nl7vp0vtA5I_3875z-74SYoU4uutGd/xstRKgtuKfAuaesT0g7GCi4Oda3C9tA7/cmEz6OTpfph4FbllmBX5a0aMkLbMZZUo/8OgUt05b61mpV4S2so2U1xSI0rTO6Izh/clCZ6DIdHOOjA8ntsZc81wuJe4dMyJmw/vH1du3geWBdworJMCea1q4ph30m4Tvkl/tJWMu5IKxX-_jidObuDhnMkv-eCriKYg/wMHXnrteQ_6WVX21h5V7tJ6yBRT4IOgt/3yPEWtilASVee6OrGYcgDTY_hYxol-Pu/4hg6LUFAAp4w2K9lBR1KLQhc0JwBAZFf/o_NGRVsCaqxq2KZxDPq1E2cWsGhw6CSL/mBIaM-9lcuspmgWAtcnld4bvQl8LbfpE/qfk-uMWzQtVsJgNdpkT_P7XHJrUmALz6/3KrGgEYXJc-15ZDJnBposVb92EmjzDVN/4K9EE95qaCscQSdiE4FeI60ikpVbCbRX/FKXHkfIdDDjqVpKlU2PZO662Zc_zaP_E/LhcRlX48fZE-4z9sUxf51wRWZmDi6JkE/wL2tyuuA5BuvJh6MGbWc1g.jpg","https://i.wfolio.com/x/KfN2JhbB89-m6UeUSQ-43b-4LTDPyZVn/q6sVLUvjujnOk6mXbO2srbIKpPlcOqy0/t7rVx8PT5NFW95R5iPfYgBdCvXqdZSYC/zyAGIGx14QnH8prwkbZ-T_VQC0dpw9Hp/imD7pN62XUepN3NSIwunZtLwTxFNiFnn/mvApufZ5YtCfRACpKFT2_ikyvtSFEXbJ/_AAJSBHewABTUBTwTqaDGE3GRxUSeTUr/wZKI4cqix_e9CR-CcHV9PXPfJUBfsWpo/muxTBH9ZxpW8-FiFNuSGTNoDOWQ--YMG/sL1dt-5MVSQ0GM4ljhrVtVK7RIIaVdmh/d86Vplvh_BhqVTfmagj17AFugcWrBKWN/u6BDgoN62UID_LfyXG30jppox5WfD_UI/5YxNPUgDxHgIEcFIglSbjAUgsNk-aIJn/Ew4NGKmgu9DtQcykVzT8mN0VYj2TqVA9/YC8Cjmsuo0Kym194CG1b32uCc8WRLQ0P/YaGAj_XUeJ7O3PVDiilAXcc1iOiMnffP/AeyhKUE09XEo4xYASNBUqQnqq4L8pjIP/-GujYi9jC-hfm4v8_4fdRMh_oclNGJRF/bYtEyGeBt0cIvEWc1KcZNg.jpg","https://i.wfolio.com/x/Erhj60RfGoSDn6LYN1vjjheZsgmFENWg/70nl7vp0vtA5I_3875z-74SYoU4uutGd/xstRKgtuKfAuaesT0g7GCi4Oda3C9tA7/cmEz6OTpfph4FbllmBX5a0aMkLbMZZUo/8OgUt05b61mpV4S2so2U1xSI0rTO6Izh/clCZ6DIdHOOjA8ntsZc81wuJe4dMyJmw/vH1du3geWBdworJMCea1q4ph30m4Tvkl/tJWMu5IKxX-_jidObuDhnMkv-eCriKYg/wMHXnrteQ_6WVX21h5V7tAzWKNdo62ZU/6CFrs2MQwIq_aaXCHMwC5v9wNlngthhN/TWjvIt20mcphM2FTpIHj-8J7aPzj6pE_/1ShvNTOj1CUcOFcyU4--oYhDBAAntlAS/ZFDL5-KJUxyNjpCpK2lwX0X4tjQTHZjV/YhdT-oHFa2OsRZByIplT9eQQr7MG7tQ7/HLM7Z2Llkbnf-I9ZoN8wWdghhycmctYr/G78K1FlVmD1MMaZC-BvYjxdqkCu-a9oF/Nr2ZsJ5Gkhk9DY1KTBSdhc5UeICIjhZ_/ENTOR8r1YOaHKr4m-o1xHKmPE3UHip5V/4cSMiHmbOUWe-ZrA2moWrQ.jpg","https://i.wfolio.com/x/Erhj60RfGoSDn6LYN1vjjheZsgmFENWg/70nl7vp0vtA5I_3875z-74SYoU4uutGd/xstRKgtuKfAuaesT0g7GCi4Oda3C9tA7/cmEz6OTpfph4FbllmBX5a0aMkLbMZZUo/8OgUt05b61mpV4S2so2U1xSI0rTO6Izh/clCZ6DIdHOOjA8ntsZc81wuJe4dMyJmw/vH1du3geWBdworJMCea1q4ph30m4Tvkl/tJWMu5IKxX-_jidObuDhnMkv-eCriKYg/wMHXnrteQ_6WVX21h5V7tOSaJeGBBhD5/VWgYNhsREwuohORCL4ej_NJwe3I4jR2K/9sxf-fwGFnZfwHuXKFh6NQLXo9hD5_cn/j9AP4Iehcs6nOY9Lqa5MGmhqmKuJ6QZr/hC5SN9O7x3ga9BhuTB0l0QcHpKZXH-qJ/VMbuSUvoW7MnumSOZlLecTMzrzouK0gZ/Od02espPHPIHQ0QmcKRdbRyjdf9cdwl2/mNYmteHiAx-trPlZwvYW6c65nv-yh8Wh/VdnxfmVdjdPzkCsiTPbDSsUAMqgLTkLs/zlqJ-XYP2TL-Dpb80kkeYyyRuUsHmmA7/Z4EO0m8i0QaUf7hu4ngNIw.jpg"],
+  sem_b: ["https://i.wfolio.com/x/zfNWg0RActCaYvCdP8NS6h3QcKqIOO7I/oVCmpsR2A0_zCBuWQbm7dJYwNQ6ysoqE/MMI-rp8N4Sx96LhPVSR11pLaaNP9IZ7t/MiD1MaFQlxsyccRqCcRZfm8_zgIxeh6A/skatciUU-HDiGFy8lhWq2g.jpg","https://i.wfolio.com/x/zfNWg0RActCaYvCdP8NS6h3QcKqIOO7I/oVCmpsR2A0_zCBuWQbm7dJYwNQ6ysoqE/XYoFtrdqRTWK2RT36hJtP1StWYwmJVtV/XIG_PxLJdANAyUoThEjlEbl7h5emUX26/suZuDZApNoP-eDuU8xV6YQ.jpg","https://i.wfolio.com/x/zfNWg0RActCaYvCdP8NS6h3QcKqIOO7I/oVCmpsR2A0_zCBuWQbm7dJYwNQ6ysoqE/iDniOnecEGYiYaZJ5lxzuTexdaZ4Y0Xs/xJunAaSP6i3cy3sCXRx8_QRD1bKplk12/vri92RZ9Pgqdj8ko0r-f7g.jpg","https://i.wfolio.com/x/zfNWg0RActCaYvCdP8NS6h3QcKqIOO7I/oVCmpsR2A0_zCBuWQbm7dJYwNQ6ysoqE/iDniOnecEGYiYaZJ5lxzuVVAYT3iuvdT/4fDiBGaN6EpxbtRWm9NRUMJ4WddaKnKv/mTi2UCSSKrbQYtRN4l9XpA.jpg","https://i.wfolio.com/x/zfNWg0RActCaYvCdP8NS6h3QcKqIOO7I/oVCmpsR2A0_zCBuWQbm7dJYwNQ6ysoqE/lzRe2jpXT_HXHTlCLYu96jU3eUWct1MF/kcUZtw_vA5CWMuh0FyyXWjXtUGzVKHjC/Gk5dAAqj3syDhMoUx9Sbkw.jpg"]
+};
+
+const VIDEOS = [
+  { id: "P0vkkzI2wRQ", label: "Promovideo" },
+  { id: "Td2Q-PnEh0s", label: "Promovideo" },
+  { id: "7UsYDYFvFoA", label: "Dokumentation" },
+  { id: "dWru_l32794", label: "Hochzeit" },
+  { id: "lGJVfF0h8ys", label: "Hochzeit" },
+  { id: "yGOrOLdSAsM", label: "Reels" },
+  { ids: ["uEVhe5lElEA", "QqsWVcXeDYM"], label: "Familiengeschichte" },
+  { ids: ["HsMuh7iOkow", "3G3JEQiBzwc"], label: "Familienfilm", poster: "https://i.wfolio.com/x/zfNWg0RActCaYvCdP8NS6h3QcKqIOO7I/oVCmpsR2A0_zCBuWQbm7dJYwNQ6ysoqE/MMI-rp8N4Sx96LhPVSR11pLaaNP9IZ7t/MiD1MaFQlxsyccRqCcRZfm8_zgIxeh6A/skatciUU-HDiGFy8lhWq2g.jpg" },
+  { id: "tpUTc_Wkkww", label: "Reels" },
+  { ids: ["rVj9MC_Tvkc", "OeYmXQ7kk4E", "YXeUwEdIfPk"], label: "Highlight" }
+];
+
+// 12 perimeter cells in a 4x4 grid (center 2x2 is the bio).
+// Layout order around the bio (left→right, top→bottom on perimeter):
+//   row1: [0][1][2][3]
+//   row2: [4]  bio  [5]
+//   row3: [6]  bio  [7]
+//   row4: [8][9][10][11]
+const TILES = [
+  { type: "video", v: VIDEOS[0] },
+  { type: "video", v: VIDEOS[9] },
+  { type: "video", v: VIDEOS[1] },
+  { type: "photos", k: "portr_a",  label: "Porträts", poster: "https://i.wfolio.com/x/D48ScH1DA6jxU_uSH-Or-C0cJClpP-QP/lEAL128xEMPGM2o_rKw_kMPHKR9vAJ80/aut6FNoAiSaYn5WAfQPI63MpqcT_Pj8L/VNRA-hytKPelWHwRJpiqxw2TUjiHzcGY/WfZE5EDabcHfQWasg465aA.jpg" },
+
+  { type: "photos", k: "sem_a",    label: "Familienfotos" },
+  { type: "video", v: VIDEOS[3] },
+
+  { type: "video", v: VIDEOS[8] },
+  { type: "video", v: VIDEOS[2] },
+
+  { type: "video", v: VIDEOS[4] },
+  { type: "video",  v: VIDEOS[7],  },
+  { type: "video", v: VIDEOS[5] },
+  { type: "video", v: VIDEOS[6] }
+];
+
+// Grid placement: explicit row/col so the bio sits in the middle.
+const POSITIONS = [
+  [1,1],[1,2],[1,3],[1,4],
+  [2,1],            [2,4],
+  [3,1],            [3,4],
+  [4,1],[4,2],[4,3],[4,4]
+];
+
+const grid = document.getElementById("grid");
+
+// Bio cell
+const bio = document.createElement("div");
+bio.className = "tile bio";
+bio.innerHTML = `
+  <h1>Aleksandra<br>Malahov</h1>
+  <p class="role">Fotografin · Videografin</p>
+  <p class="bio-text">Stille, ehrliche Geschichten in Bild und Bewegung — mit Geduld, Licht und einem Gespür für den Moment.</p>
+  <div class="contact">
+    <div class="row"><span class="k">WhatsApp</span><span class="v"><a href="https://wa.me/4915773614292" target="_blank">+49 157 73614292</a></span></div>
+    <div class="row"><span class="k">Instagram</span><span class="v"><a href="https://www.instagram.com/malahov_aleksa" target="_blank">@malahov_aleksa</a></span></div>
+    <div class="row"><span class="k">Web</span><span class="v"><a href="https://aleksandra.malahov.io" target="_blank">aleksandra.malahov.io</a></span></div>
+    <div class="row"><span class="k">Standort</span><span class="v">Schweinfurt, Bayern</span></div>
+  </div>`;
+grid.appendChild(bio);
+
+// Shuffle perimeter tiles on each load (Fisher–Yates)
+const SHUFFLED = TILES.slice();
+for (let i = SHUFFLED.length - 1; i > 0; i--) {
+  const j = Math.floor(Math.random() * (i + 1));
+  [SHUFFLED[i], SHUFFLED[j]] = [SHUFFLED[j], SHUFFLED[i]];
+}
+
+// Build tiles
+SHUFFLED.forEach((t, i) => {
+  const el = document.createElement("div");
+  el.className = "tile " + t.type;
+  const [r, c] = POSITIONS[i];
+  el.style.gridRow = r;
+  el.style.gridColumn = c;
+
+  let posterSrc, label;
+  if (t.type === "video") {
+    posterSrc = t.v.poster || `https://img.youtube.com/vi/${t.v.id || t.v.ids[0]}/maxresdefault.jpg`;
+    label = t.v.label;
+  } else {
+    posterSrc = t.poster || PHOTOS[t.k][0];
+    label = t.label;
+  }
+  el.innerHTML = `
+    <img class="poster" src="${posterSrc}" alt="" referrerpolicy="no-referrer">
+    <div class="badge"></div>
+    <div class="label">${label}</div>`;
+  el.addEventListener("click", (e) => {
+    e.stopPropagation();
+    openPreview(t);
+  });
+  grid.appendChild(el);
+});
+
+// Modal logic
+const modal = document.getElementById("modal");
+const stage = document.getElementById("stage");
+let modalOpen = false;
+let cycleTimer = null;
+let currentTile = null;
+let photoIdx = 0;
+let photoArr = null;
+let photoEl = null;
+let videoIds = null;
+let videoIdx = 0;
+let audioOn = false; // sticky audio preference; carries across video/tile changes
+
+// Load the YouTube IFrame Player API once; resolve when ready.
+const YT_READY = new Promise((resolve) => {
+  if (window.YT && window.YT.Player) return resolve();
+  window.onYouTubeIframeAPIReady = () => resolve();
+  const s = document.createElement("script");
+  s.src = "https://www.youtube.com/iframe_api";
+  document.head.appendChild(s);
+});
+
+let ytPlayer = null;
+
+function ytEmbed(id, muted) {
+  // Only used as the initial iframe src — runtime mute is handled via YT API.
+  const origin = encodeURIComponent(location.origin || "");
+  const m = muted ? 1 : 0;
+  return `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=${m}&rel=0&modestbranding=1&playsinline=1&enablejsapi=1&origin=${origin}`;
+}
+
+function clearStage() {
+  if (cycleTimer) { clearInterval(cycleTimer); cycleTimer = null; }
+  photoArr = null; photoEl = null;
+  videoIds = null; videoIdx = 0;
+  modal.classList.remove("has-carousel");
+  document.getElementById("counter").textContent = "";
+  if (ytPlayer) {
+    try { audioOn = !ytPlayer.isMuted(); } catch(_) {}
+    try { ytPlayer.destroy(); } catch(_) {}
+    ytPlayer = null;
+  }
+  [...stage.querySelectorAll("img, iframe, .yt-mount")].forEach(n => n.remove());
+}
+
+function preload(url) {
+  const img = new Image();
+  img.referrerPolicy = "no-referrer";
+  img.src = url;
+  return img;
+}
+
+function updateCounter() {
+  const c = document.getElementById("counter");
+  if (photoArr && photoArr.length > 1) c.textContent = `${photoIdx + 1} / ${photoArr.length}`;
+  else if (videoIds && videoIds.length > 1) c.textContent = `${videoIdx + 1} / ${videoIds.length}`;
+  else c.textContent = "";
+}
+
+function showPhoto(i) {
+  if (!photoArr) return;
+  photoIdx = (i + photoArr.length) % photoArr.length;
+  updateCounter();
+  const target = photoArr[photoIdx];
+  const newImg = document.createElement("img");
+  newImg.referrerPolicy = "no-referrer";
+  newImg.className = "photo-layer";
+  newImg.style.cssText =
+    "position:absolute;inset:0;width:100%;height:100%;object-fit:contain;" +
+    "opacity:0;filter:blur(10px) saturate(1.05);" +
+    "transition:opacity .65s ease, filter .65s ease;";
+
+  const reveal = () => {
+    if (!modalOpen || !photoArr) return;
+    const oldImg = photoEl;
+    stage.insertBefore(newImg, stage.firstChild);
+    photoEl = newImg;
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      newImg.style.opacity = "1";
+      newImg.style.filter = "blur(0) saturate(1)";
+      if (oldImg) {
+        oldImg.style.transition = "opacity .65s ease, filter .65s ease";
+        oldImg.style.opacity = "0";
+        oldImg.style.filter = "blur(10px)";
+      }
+    }));
+    setTimeout(() => { if (oldImg && oldImg.parentNode) oldImg.remove(); }, 720);
+    // warm neighbours so navigation stays instant
+    preload(photoArr[(photoIdx + 1) % photoArr.length]);
+    preload(photoArr[(photoIdx - 1 + photoArr.length) % photoArr.length]);
+  };
+
+  newImg.src = target;
+  if (newImg.decode) {
+    newImg.decode().then(reveal).catch(reveal);
+  } else if (newImg.complete && newImg.naturalWidth) {
+    reveal();
+  } else {
+    let done = false;
+    const go = () => { if (!done) { done = true; reveal(); } };
+    newImg.addEventListener("load", go, { once: true });
+    newImg.addEventListener("error", go, { once: true });
+    setTimeout(go, 1500);
+  }
+}
+
+function showVideo(i) {
+  if (!videoIds || !ytPlayer) return;
+  videoIdx = (i + videoIds.length) % videoIds.length;
+  updateCounter();
+  try { ytPlayer.loadVideoById(videoIds[videoIdx]); } catch(_) {}
+}
+
+function pausePhotoCycle() {
+  if (cycleTimer) { clearInterval(cycleTimer); cycleTimer = null; }
+}
+
+function advanceToNextTile() {
+  if (!modalOpen || !currentTile) return;
+  const idx = SHUFFLED.indexOf(currentTile);
+  if (idx < 0) return;
+  const next = SHUFFLED[(idx + 1) % SHUFFLED.length];
+  openPreview(next);
+}
+
+function openPreview(t) {
+  if (modalOpen && currentTile === t) return;
+  currentTile = t;
+  clearStage();
+  modal.classList.add("open");
+  modalOpen = true;
+
+  if (t.type === "photos") {
+    photoArr = PHOTOS[t.k];
+    photoEl = null;
+    photoArr.forEach(preload); // warm the whole set so cycling and ←/→ never flicker
+    if (photoArr.length > 1) modal.classList.add("has-carousel");
+    showPhoto(0);
+    cycleTimer = setInterval(() => {
+      if (photoIdx >= photoArr.length - 1) advanceToNextTile();
+      else showPhoto(photoIdx + 1);
+    }, 2500);
+  } else if (t.v.src) {
+    photoArr = null; photoEl = null;
+    const vid = document.createElement("video");
+    vid.src = t.v.src;
+    vid.autoplay = true;
+    vid.muted = true;
+    vid.controls = true;
+    vid.loop = false;
+    vid.style.cssText = "width:100%;height:100%;object-fit:contain;background:#000;display:block;";
+    stage.insertBefore(vid, stage.firstChild);
+    vid.play().catch(() => {});
+  } else {
+    photoArr = null; photoEl = null;
+    const mount = document.createElement("div");
+    mount.className = "yt-mount";
+    stage.insertBefore(mount, stage.firstChild);
+    const ids = t.v.ids && t.v.ids.length ? t.v.ids : [t.v.id];
+    videoIds = ids;
+    videoIdx = 0;
+    if (ids.length > 1) modal.classList.add("has-carousel");
+    updateCounter();
+    const videoId = ids[0];
+    YT_READY.then(() => {
+      // Bail if the modal was closed or switched while the API was loading.
+      if (!modalOpen || !currentTile || currentTile.v !== t.v || !mount.isConnected) return;
+      const playerVars = {
+        autoplay: 1, mute: 1, rel: 0, modestbranding: 1, playsinline: 1,
+        enablejsapi: 1, origin: location.origin
+      };
+      ytPlayer = new YT.Player(mount, {
+        videoId,
+        width: "100%",
+        height: "100%",
+        playerVars,
+        host: "https://www.youtube-nocookie.com",
+        events: {
+          onReady: (e) => {
+            if (audioOn) { try { e.target.unMute(); } catch(_) {} }
+            else e.target.mute();
+            e.target.setVolume(85);
+            e.target.playVideo();
+          },
+          onStateChange: (e) => {
+            if (e.data !== YT.PlayerState.ENDED || !videoIds) return;
+            if (videoIdx < videoIds.length - 1) showVideo(videoIdx + 1);
+            else advanceToNextTile();
+          }
+        }
+      });
+    });
+  }
+}
+
+function closePreview() {
+  modal.classList.remove("open");
+  modalOpen = false;
+  currentTile = null;
+  clearStage();
+}
+
+function goFullscreen() {
+  if (!modalOpen) return;
+  if (stage.requestFullscreen) stage.requestFullscreen();
+  else if (stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+}
+
+function setVideoMuted(muted) {
+  audioOn = !muted;
+  if (!currentTile || currentTile.type !== "video") return;
+  const vid = stage.querySelector("video");
+  if (vid) {
+    vid.muted = muted;
+    if (!muted) vid.volume = 0.85;
+    return;
+  }
+  if (!ytPlayer) return;
+  try {
+    if (muted) { ytPlayer.mute(); }
+    else { ytPlayer.unMute(); ytPlayer.setVolume(85); }
+  } catch(_) {}
+}
+
+// Modal interactions
+//   - click on backdrop  → close
+//   - click on stage     → fullscreen
+//   - double-click stage → exit fullscreen (or close if not fullscreen)
+//   - ←/→ arrows         → photo navigation (pauses auto-cycle)
+modal.addEventListener("click", (e) => {
+  if (e.target === modal) closePreview();
+});
+function navStep(dir) {
+  if (photoArr && photoArr.length > 1) {
+    pausePhotoCycle();
+    showPhoto(photoIdx + dir);
+  } else if (videoIds && videoIds.length > 1) {
+    showVideo(videoIdx + dir);
+  }
+}
+document.getElementById("videoPrev").addEventListener("click", (e) => {
+  e.stopPropagation();
+  navStep(-1);
+});
+document.getElementById("videoNext").addEventListener("click", (e) => {
+  e.stopPropagation();
+  navStep(1);
+});
+stage.addEventListener("dblclick", () => {
+  if (document.fullscreenElement) document.exitFullscreen();
+  else goFullscreen();
+});
+document.addEventListener("keydown", (e) => {
+  if (!modalOpen) return;
+  if (e.key === "Escape") {
+    if (!document.fullscreenElement) closePreview();
+  } else if (e.key === "ArrowRight" && photoArr) {
+    pausePhotoCycle();
+    showPhoto(photoIdx + 1);
+  } else if (e.key === "ArrowLeft" && photoArr) {
+    pausePhotoCycle();
+    showPhoto(photoIdx - 1);
+  }
+});
+// Touch swipe for photo/video carousels
+let touchStartX = 0, touchStartY = 0, touchActive = false;
+stage.addEventListener("touchstart", (e) => {
+  if (e.touches.length !== 1) { touchActive = false; return; }
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+  touchActive = true;
+}, { passive: true });
+stage.addEventListener("touchend", (e) => {
+  if (!touchActive) return;
+  touchActive = false;
+  const t = e.changedTouches[0];
+  const dx = t.clientX - touchStartX;
+  const dy = t.clientY - touchStartY;
+  if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy) * 1.2) return;
+  if (photoArr) {
+    pausePhotoCycle();
+    showPhoto(photoIdx + (dx < 0 ? 1 : -1));
+  } else if (videoIds && videoIds.length > 1) {
+    showVideo(videoIdx + (dx < 0 ? 1 : -1));
+  }
+}, { passive: true });
+
+// Idle auto-shuffle (desktop only): every minute, swap two random tiles with a FLIP animation.
+let lastActivity = Date.now();
+let shuffleAnimating = false;
+["mousemove", "keydown", "click", "scroll", "touchstart", "wheel"].forEach((ev) => {
+  document.addEventListener(ev, () => { lastActivity = Date.now(); }, { passive: true });
+});
+
+function flipSwap() {
+  if (shuffleAnimating || modalOpen) return;
+  const tiles = [...grid.querySelectorAll(".tile:not(.bio)")];
+  if (tiles.length < 2) return;
+  const i = Math.floor(Math.random() * tiles.length);
+  let j = Math.floor(Math.random() * tiles.length);
+  while (j === i) j = Math.floor(Math.random() * tiles.length);
+  const a = tiles[i], b = tiles[j];
+
+  // First: snapshot current positions
+  const ra = a.getBoundingClientRect();
+  const rb = b.getBoundingClientRect();
+
+  // Last: swap grid placement
+  const aRow = a.style.gridRow, aCol = a.style.gridColumn;
+  a.style.gridRow = b.style.gridRow; a.style.gridColumn = b.style.gridColumn;
+  b.style.gridRow = aRow; b.style.gridColumn = aCol;
+
+  const ra2 = a.getBoundingClientRect();
+  const rb2 = b.getBoundingClientRect();
+  const dxa = ra.left - ra2.left, dya = ra.top - ra2.top;
+  const dxb = rb.left - rb2.left, dyb = rb.top - rb2.top;
+
+  // Invert: pre-translate to the original spot
+  for (const el of [a, b]) { el.style.transition = "none"; el.style.zIndex = "5"; }
+  a.style.transform = `translate(${dxa}px, ${dya}px) scale(.96)`;
+  b.style.transform = `translate(${dxb}px, ${dyb}px) scale(.96)`;
+  a.style.filter = "brightness(.85)";
+  b.style.filter = "brightness(.85)";
+
+  shuffleAnimating = true;
+  // Play: animate to the new grid spot
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      const ease = "cubic-bezier(.65,0,.35,1)";
+      for (const el of [a, b]) {
+        el.style.transition = `transform 900ms ${ease}, filter 900ms ease`;
+        el.style.transform = "";
+        el.style.filter = "";
+      }
+      setTimeout(() => {
+        for (const el of [a, b]) {
+          el.style.transition = "";
+          el.style.zIndex = "";
+          el.style.filter = "";
+        }
+        shuffleAnimating = false;
+      }, 950);
+    });
+  });
+}
+
+setInterval(() => {
+  if (document.hidden) return;
+  if (modalOpen) return;
+  if (!window.matchMedia("(min-width: 821px)").matches) return;
+  if (Date.now() - lastActivity < 5000) return;
+  flipSwap();
+}, 25000);
+
+document.addEventListener("fullscreenchange", () => {
+  if (!modalOpen) return;
+  // Unmute when the user enters fullscreen. Never auto-mute on exit — once
+  // audio is on, keep it on. Initial mute comes from the browser's autoplay
+  // policy, so the volume button stays the single source of truth afterwards.
+  if (document.fullscreenElement) setVideoMuted(false);
+});
+</script>
+
+</body></html>
