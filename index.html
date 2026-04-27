@@ -712,21 +712,24 @@ stage.addEventListener("touchend", (e) => {
   }
 }, { passive: true });
 
-// Idle auto-shuffle (desktop only): every minute, swap two random tiles with a FLIP animation.
+// Idle auto-shuffle (desktop only): every 25s, swap three random pairs of tiles
+// with a staggered FLIP animation if the user has been idle for ≥5s.
 let lastActivity = Date.now();
-let shuffleAnimating = false;
 ["mousemove", "keydown", "click", "scroll", "touchstart", "wheel"].forEach((ev) => {
   document.addEventListener(ev, () => { lastActivity = Date.now(); }, { passive: true });
 });
 
 function flipSwap() {
-  if (shuffleAnimating || modalOpen) return;
-  const tiles = [...grid.querySelectorAll(".tile:not(.bio)")];
+  if (modalOpen) return;
+  const tiles = [...grid.querySelectorAll(".tile:not(.bio)")]
+    .filter(t => t.dataset.shuffling !== "1");
   if (tiles.length < 2) return;
   const i = Math.floor(Math.random() * tiles.length);
   let j = Math.floor(Math.random() * tiles.length);
   while (j === i) j = Math.floor(Math.random() * tiles.length);
   const a = tiles[i], b = tiles[j];
+  a.dataset.shuffling = "1";
+  b.dataset.shuffling = "1";
 
   // First: snapshot current positions
   const ra = a.getBoundingClientRect();
@@ -749,7 +752,6 @@ function flipSwap() {
   a.style.filter = "brightness(.85)";
   b.style.filter = "brightness(.85)";
 
-  shuffleAnimating = true;
   // Play: animate to the new grid spot
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
@@ -764,8 +766,8 @@ function flipSwap() {
           el.style.transition = "";
           el.style.zIndex = "";
           el.style.filter = "";
+          delete el.dataset.shuffling;
         }
-        shuffleAnimating = false;
       }, 950);
     });
   });
@@ -777,6 +779,8 @@ setInterval(() => {
   if (!window.matchMedia("(min-width: 821px)").matches) return;
   if (Date.now() - lastActivity < 5000) return;
   flipSwap();
+  setTimeout(flipSwap, 350);
+  setTimeout(flipSwap, 700);
 }, 25000);
 
 document.addEventListener("fullscreenchange", () => {
