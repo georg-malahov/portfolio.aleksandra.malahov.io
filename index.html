@@ -111,22 +111,20 @@
   .tile.video .badge::before { content: "\25B6\FE0E"; font-size: 10px; }
   .tile.photos .badge::before { content: "\25EB\FE0E"; font-size: 12px; }
 
-  /* Center bio */
+  /* Center bio — grid: main content (1fr) on top, legal band (auto) at the bottom */
   .bio {
     grid-column: 2 / span 2;
     grid-row: 2 / span 2;
     background: var(--bg);
     border: 1px solid #2a2a2a;
     border-radius: 4px;
-    padding: clamp(24px, 2.5vw, 48px);
-    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    padding: clamp(20px, 2vw, 36px) clamp(24px, 2.5vw, 48px) 0;
+    display: grid;
+    grid-template-rows: 1fr auto;
     text-align: center;
     cursor: default;
   }
   .bio:hover img.poster { transform: none; }
-  .bio {
-    padding: clamp(20px, 2vw, 36px) clamp(24px, 2.5vw, 48px) 0;
-  }
   .bio h1 {
     font-family: "Didot", "Bodoni 72", "Playfair Display", Georgia, serif;
     font-weight: 500;
@@ -163,16 +161,14 @@
   .bio .contact .row { display: flex; gap: 14px; align-items: baseline; min-width: 0; }
 
   .bio-main {
-    flex: 1;
     display: flex; flex-direction: column;
     justify-content: center; align-items: center;
     width: 100%;
     min-height: 0;
+    padding-bottom: clamp(28px, 3vw, 40px);
   }
   .bio .legal {
-    align-self: stretch;
-    margin-top: 22px;
-    padding: 14px 0;
+    padding: clamp(12px, 1.4vw, 16px) 0;
     border-top: 1px solid rgba(255,208,97,.18);
     display: flex; align-items: center; justify-content: center; gap: 14px;
     font-size: 11px; letter-spacing: .15em; text-transform: uppercase;
@@ -291,7 +287,8 @@
     }
     .bio .contact .row { gap: 12px; }
     .bio .contact .k { width: 8.5em; flex: 0 0 8.5em; font-size: 11px; }
-    .bio .legal { margin-top: 16px; padding: 10px 0; }
+    .bio-main { padding-bottom: 22px; }
+    .bio .legal { padding: 10px 0; }
     .tile .label { padding: 10px 12px; font-size: 12px; }
     .modal-stage { width: 94vw; height: 60vh; }
     .video-nav { width: 44px; height: 44px; font-size: 22px; }
