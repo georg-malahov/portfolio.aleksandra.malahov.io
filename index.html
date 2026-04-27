@@ -118,8 +118,9 @@
     background: var(--bg);
     border: 1px solid #2a2a2a;
     border-radius: 4px;
-    padding: clamp(20px, 2vw, 36px) clamp(24px, 2.5vw, 48px) 0;
+    padding: clamp(20px, 2vw, 36px) clamp(24px, 2.5vw, 48px) clamp(14px, 1.4vw, 18px);
     display: grid;
+    grid-template-columns: 1fr;
     grid-template-rows: 1fr auto;
     text-align: center;
     cursor: default;
@@ -148,7 +149,6 @@
     max-width: 44ch;
   }
   .bio .contact {
-    border-top: 1px solid #2a2a2a;
     padding-top: 22px;
     width: 100%;
     display: grid;
@@ -161,15 +161,15 @@
   .bio .contact .row { display: flex; gap: 14px; align-items: baseline; min-width: 0; }
 
   .bio-main {
+    justify-self: stretch;
     display: flex; flex-direction: column;
     justify-content: center; align-items: center;
-    width: 100%;
     min-height: 0;
-    padding-bottom: clamp(28px, 3vw, 40px);
+    padding-bottom: 22px;
   }
   .bio .legal {
-    padding: clamp(12px, 1.4vw, 16px) 0;
-    border-top: 1px solid rgba(255,208,97,.18);
+    justify-self: stretch;
+    padding: clamp(22px, 2.5vw, 30px) 0 0;
     display: flex; align-items: center; justify-content: center; gap: 14px;
     font-size: 11px; letter-spacing: .15em; text-transform: uppercase;
   }
@@ -269,7 +269,7 @@
       grid-column: 1 / -1 !important;
       grid-row: 1 !important;
       order: -1;
-      padding: 28px 22px 0;
+      padding: 28px 22px 14px;
       min-height: auto;
       height: auto;
       justify-content: flex-start;
@@ -284,11 +284,15 @@
       padding-top: 18px;
       font-size: 14px;
       white-space: normal;
+      width: max-content;
+      max-width: 100%;
+      margin-left: auto;
+      margin-right: auto;
     }
     .bio .contact .row { gap: 12px; }
     .bio .contact .k { width: 8.5em; flex: 0 0 8.5em; font-size: 11px; }
-    .bio-main { padding-bottom: 22px; }
-    .bio .legal { padding: 10px 0; }
+    .bio-main { padding-bottom: 18px; }
+    .bio .legal { padding: 22px 0 0; }
     .tile .label { padding: 10px 12px; font-size: 12px; }
     .modal-stage { width: 94vw; height: 60vh; }
     .video-nav { width: 44px; height: 44px; font-size: 22px; }
